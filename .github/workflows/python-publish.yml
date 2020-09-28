@@ -8,39 +8,43 @@ on:
     types: [created]
 
 jobs:
-  deploy:
+  deploy_windows:
 
-    runs-on: [ubuntu-latest, windows-latest]
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-    - name: Install build dependencies
+    - name: Build wheel on Windows
       run: |
         pip install numpy
         pip install cython
-    - name: Build wheel on Windows
-      if: runner.os == 'Windows'
-      run: |
         python setup.py bdist_wheel
-    - name: Build wheel on Linux
-      if: runner.os == 'Linux'
-      uses: RalfG/python-wheels-manylinux-build@v0.3.1-manylinux2010_x86_64
-      with:
-        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38m'
-        build-requirements: 'numpy cython'
-        
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python setup.py sdist bdist_wheel
-        twine upload dist/* --repository-url https://test.pypi.org/legacy/ dist/*
+        twine --repository-url https://test.pypi.org/legacy/ dist/* upload dist/*
+        
+  deploy_linux:
+    runs-on: linux-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build wheel on Linux
+      if: runner.os == 'Linux'
+      uses: RalfG/python-wheels-manylinux-build@v0.3.1-manylinux2010_x86_64
+      with:
+        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38m'
+        build-requirements: 'numpy cython'

@@ -46,6 +46,11 @@ jobs:
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38'
         build-requirements: 'numpy cython'
+        pip-wheel-args: '-w ./wheeltemp'
+    - name: Move manylinux
+      run: |
+        mkdir -p dist
+        cp wheeltemp/pymaro-*-manylinux*.whl dist
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -58,4 +63,4 @@ jobs:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        twine upload dist/pymaro-*-manylinux*.whl
+        twine upload dist/*

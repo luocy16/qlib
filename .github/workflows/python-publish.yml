@@ -35,11 +35,10 @@ jobs:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py sdist bdist_wheel
-        twine --repository-url https://test.pypi.org/legacy/ dist/* upload dist/*
+        twine --repository-url https://test.pypi.org/legacy/ upload dist/*
         
   deploy_linux:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Build wheel on Linux
@@ -48,3 +47,9 @@ jobs:
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38m'
         build-requirements: 'numpy cython'
+    - name: Build and publish
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine --repository-url https://test.pypi.org/legacy/ upload dist/*
